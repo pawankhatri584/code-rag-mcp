@@ -1,7 +1,7 @@
 {
   "name": "code-rag-mcp",
-  "version": "0.1.0",
-  "description": "Repo-local semantic code search over MCP. Tree-sitter chunking + jina-embeddings-v2-base-code + LanceDB. One command to install.",
+  "version": "0.2.0",
+  "description": "Lightweight repo-local hybrid (semantic + keyword) code search over MCP. Pure npm — no Docker, no Ollama, no servers. 11 languages via tree-sitter, jina-code embeddings, LanceDB, live file watcher. One command to install.",
   "type": "module",
   "main": "src/index.js",
   "bin": {
@@ -23,12 +23,19 @@
     "model-context-protocol",
     "claude",
     "claude-code",
+    "claude-code-plugin",
     "rag",
     "code-search",
     "semantic-search",
+    "hybrid-search",
+    "bm25",
+    "rrf",
     "embeddings",
     "tree-sitter",
-    "lancedb"
+    "lancedb",
+    "jina",
+    "lightweight",
+    "zero-config"
   ],
   "engines": {
     "node": ">=18.17"
@@ -47,11 +54,19 @@
     "@huggingface/transformers": "^3.0.0",
     "@lancedb/lancedb": "^0.10.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "apache-arrow": "^21.1.0",
+    "chokidar": "^4.0.3",
     "ignore": "^5.3.2",
-    "tree-sitter": "^0.21.1",
-    "tree-sitter-javascript": "^0.21.4",
-    "tree-sitter-python": "^0.21.0",
-    "tree-sitter-rust": "^0.21.0",
-    "tree-sitter-typescript": "^0.21.2"
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-c": "^0.23.6",
+    "tree-sitter-cpp": "^0.23.4",
+    "tree-sitter-go": "^0.23.4",
+    "tree-sitter-java": "^0.23.5",
+    "tree-sitter-javascript": "^0.23.1",
+    "tree-sitter-php": "^0.23.12",
+    "tree-sitter-python": "^0.23.6",
+    "tree-sitter-ruby": "^0.23.1",
+    "tree-sitter-rust": "^0.23.3",
+    "tree-sitter-typescript": "^0.23.2"
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "code-rag-mcp",
+  "version": "0.2.0",
+  "description": "Repo-local semantic + keyword hybrid code search over MCP. Tree-sitter chunking for 11 languages, jina-code embeddings, LanceDB vector store, live file watcher. Zero infra.",
+  "author": "Pawan Khatri",
+  "homepage": "https://github.com/pawankhatri584/code-rag-mcp",
+  "repository": "https://github.com/pawankhatri584/code-rag-mcp",
+  "license": "MIT",
+  "keywords": ["search", "rag", "embeddings", "semantic-search", "code-search", "tree-sitter"],
+  "mcpServers": {
+    "code-rag": {
+      "command": "npx",
+      "args": ["-y", "code-rag-mcp", "serve"]
+    }
+  }
+}

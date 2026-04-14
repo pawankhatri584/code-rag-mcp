@@ -14,11 +14,20 @@ const cmd = (rawCmd || "").toLowerCase();
 const HELP = `code-rag — repo-local semantic code search over MCP
 
 Usage:
-  code-rag init [--force] [--personal]   Register code-rag in this repo's .mcp.json and start indexing
-  code-rag serve                          Run the MCP stdio server (invoked by Claude Code)
-  code-rag reindex [--force]              Re-scan the repo; --force rebuilds every file
-  code-rag stats                          Print index stats (files, chunks, languages)
-  code-rag help                           Show this message
+  code-rag init [options]     Register code-rag in this repo's MCP config and start indexing
+  code-rag serve              Run the MCP stdio server (invoked by Claude Code)
+  code-rag reindex [--force]  Re-scan the repo; --force rebuilds every file
+  code-rag stats              Print index stats (files, chunks, languages)
+  code-rag help               Show this message
+
+Init options:
+  --global           Use \`code-rag serve\` (requires:  npm install -g code-rag-mcp)
+  --local            Use \`npx code-rag-mcp serve\` pinned to a project-local install
+                     (requires:  npm install --save-dev code-rag-mcp)
+  --personal         Write to .claude/settings.local.json (gitignored) instead of .mcp.json
+  --force            Overwrite an existing code-rag entry
+
+Default (no --global / --local) uses \`npx -y code-rag-mcp serve\` — zero install, always latest.
 
 Environment:
   REPO_ROOT   Override auto-detected repo root (default: nearest .git ancestor of cwd)

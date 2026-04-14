@@ -7,6 +7,12 @@ import JS from "tree-sitter-javascript";
 import TS from "tree-sitter-typescript";
 import Rust from "tree-sitter-rust";
 import Python from "tree-sitter-python";
+import Go from "tree-sitter-go";
+import Java from "tree-sitter-java";
+import Ruby from "tree-sitter-ruby";
+import C from "tree-sitter-c";
+import Cpp from "tree-sitter-cpp";
+import PHP from "tree-sitter-php";
 
 const MAX_CHARS = 2000;
 const MIN_CHARS = 100;
@@ -23,6 +29,17 @@ const LANG_BY_EXT = {
   ".cjs": { name: "javascript", parser: JS },
   ".rs": { name: "rust", parser: Rust },
   ".py": { name: "python", parser: Python },
+  ".go": { name: "go", parser: Go },
+  ".java": { name: "java", parser: Java },
+  ".rb": { name: "ruby", parser: Ruby },
+  ".c": { name: "c", parser: C },
+  ".h": { name: "c", parser: C },
+  ".cpp": { name: "cpp", parser: Cpp },
+  ".cc": { name: "cpp", parser: Cpp },
+  ".cxx": { name: "cpp", parser: Cpp },
+  ".hpp": { name: "cpp", parser: Cpp },
+  ".hh": { name: "cpp", parser: Cpp },
+  ".php": { name: "php", parser: PHP.php },
 };
 
 const TEXT_EXT = new Set([
@@ -41,6 +58,19 @@ const CHUNKABLE_NODES = new Set([
   "trait_item", "mod_item", "macro_definition", "use_declaration",
   // Python
   "function_definition", "class_definition", "decorated_definition",
+  // Go
+  "method_declaration", "type_declaration", "const_declaration", "var_declaration",
+  "import_declaration", "type_spec",
+  // Java (function_declaration / class_declaration covered above)
+  "constructor_declaration", "record_declaration", "annotation_type_declaration",
+  // Ruby
+  "method", "singleton_method", "class", "module",
+  // C / C++
+  "struct_specifier", "union_specifier", "enum_specifier", "type_definition",
+  "class_specifier", "namespace_definition", "template_declaration",
+  "preproc_def", "preproc_function_def",
+  // PHP
+  "trait_declaration", "namespace_definition",
 ]);
 
 const parserCache = new Map();

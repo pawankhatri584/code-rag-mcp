@@ -33,6 +33,16 @@ export async function openStore(dataDir) {
   return new Store(db);
 }
 
+function baseFilters({ language, pathGlob }) {
+  const filters = [];
+  if (language) filters.push(`language = '${language.replace(/'/g, "''")}'`);
+  if (pathGlob) {
+    const like = pathGlob.replace(/\*/g, "%");
+    filters.push(`path LIKE '${like.replace(/'/g, "''")}'`);
+  }
+  return filters;
+}
+
 export class Store {
   constructor(db) {
     this.db = db;
@@ -95,14 +105,32 @@ export class Store {
   async search(queryVec, { k = 10, language, pathGlob } = {}) {
     await this.ensureTables();
     let q = this.chunks.search(Float32Array.from(queryVec)).limit(k);
-    const filters = [];
-    if (language) filters.push(`language = '${language.replace(/'/g, "''")}'`);
-    if (pathGlob) {
-      const like = pathGlob.replace(/\*/g, "%");
-      filters.push(`path LIKE '${like.replace(/'/g, "''")}'`);
-    }
+    const filters = baseFilters({ language, pathGlob });
     if (filters.length) q = q.where(filters.join(" AND "));
     return q.toArray();
+  }
+
+  // Keyword search via SQL LIKE over chunk content. Returns candidates whose content
+  // contains any of the query tokens. The caller (hybrid.js) does the actual scoring.
+  // We cap to CANDIDATE_LIMIT because SQL LIKE can match a lot, and we only need a
+  // reasonable candidate pool to feed into RRF.
+  async keywordCandidates(tokens, { candidateLimit = 200, language, pathGlob } = {}) {
+    await this.ensureTables();
+    if (!tokens || tokens.length === 0) return [];
+    // Dedupe + escape SQL single quotes. We don't escape %/_ — the whole query is
+    // a positive match search, and '%' in a code query is vanishingly rare.
+    const unique = [...new Set(tokens)].slice(0, 12); // cap to avoid absurdly long SQL
+    const likeClauses = unique.map((t) => {
+      const esc = t.replace(/'/g, "''");
+      return `lower(content) LIKE '%${esc}%'`;
+    });
+    const filters = [`(${likeClauses.join(" OR ")})`];
+    filters.push(...baseFilters({ language, pathGlob }));
+    return this.chunks
+      .query()
+      .where(filters.join(" AND "))
+      .limit(candidateLimit)
+      .toArray();
   }
 
   async getChunk(id) {
@@ -110,6 +138,11 @@ export class Store {
     const escaped = id.replace(/'/g, "''");
     const rows = await this.chunks.query().where(`id = '${escaped}'`).limit(1).toArray();
     return rows[0] || null;
+  }
+
+  async countChunks() {
+    await this.ensureTables();
+    return this.chunks.countRows();
   }
 
   async stats() {

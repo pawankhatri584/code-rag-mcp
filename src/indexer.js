@@ -3,41 +3,14 @@
 // Idempotent — only re-processes files whose mtime changed since last run.
 
 import fs from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import ignore from "ignore";
 import { chunkFile, detectLanguage } from "./chunker.js";
 import { embedBatch } from "./embedder.js";
 import { openStore } from "./store.js";
 import { resolveConfig } from "./config.js";
+import { buildIgnore } from "./excludes.js";
 
 const { repoRoot: REPO_ROOT, dataDir: DATA_DIR } = resolveConfig();
-
-// Built-in excludes applied on top of the repo's .gitignore. Keep generic —
-// anything project-specific should live in .gitignore, not here.
-const HARD_EXCLUDES = [
-  "node_modules/",
-  ".git/",
-  "dist/",
-  "build/",
-  "out/",
-  "target/",
-  ".next/",
-  ".nuxt/",
-  ".turbo/",
-  ".cache/",
-  ".vercel/",
-  "coverage/",
-  "*.lock",
-  "package-lock.json",
-  "yarn.lock",
-  "pnpm-lock.yaml",
-  ".DS_Store",
-  "*.generated.ts",
-  "*.generated.js",
-  "*.min.js",
-  "*.min.css",
-];
 
 const FORCE_REINDEX = process.argv.includes("--reindex");
 const STATS_ONLY = process.argv.includes("--stats");
@@ -55,17 +28,7 @@ async function main() {
   console.log(`[code-rag] data dir ${DATA_DIR}`);
   console.log(`[code-rag] reindex=${FORCE_REINDEX}`);
 
-  const ig = ignore().add(HARD_EXCLUDES);
-  // Respect repo .gitignore too
-  const giPath = path.join(REPO_ROOT, ".gitignore");
-  if (existsSync(giPath)) {
-    ig.add(readFileSync(giPath, "utf8"));
-  }
-  // If the data dir happens to live inside the repo, don't re-index it into itself.
-  const dataRel = path.relative(REPO_ROOT, DATA_DIR);
-  if (dataRel && !dataRel.startsWith("..") && !path.isAbsolute(dataRel)) {
-    ig.add(dataRel + "/");
-  }
+  const ig = buildIgnore({ repoRoot: REPO_ROOT, dataDir: DATA_DIR });
 
   const files = [];
   await walk(REPO_ROOT, REPO_ROOT, ig, files);
