@@ -1,9 +1,8 @@
 # code-rag-mcp
 
-[![npm](https://img.shields.io/npm/v/code-rag-mcp?label=npm&color=cb3837&cacheSeconds=0)](https://www.npmjs.com/package/code-rag-mcp)
-[![downloads](https://img.shields.io/npm/dm/code-rag-mcp?color=3178c6&cacheSeconds=0)](https://www.npmjs.com/package/code-rag-mcp)
-[![license](https://img.shields.io/npm/l/code-rag-mcp?color=green&cacheSeconds=0)](./LICENSE)
-[![node](https://img.shields.io/node/v/code-rag-mcp?cacheSeconds=0)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/code-rag-mcp?label=npm&color=cb3837)](https://www.npmjs.com/package/code-rag-mcp)
+[![license](https://img.shields.io/npm/l/code-rag-mcp?color=green)](./LICENSE)
+[![node](https://img.shields.io/node/v/code-rag-mcp)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-compatible-7c3aed)](https://modelcontextprotocol.io)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-plugin-d97706)](#claude-code-plugin)
 
