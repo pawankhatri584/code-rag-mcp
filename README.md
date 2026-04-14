@@ -1,5 +1,9 @@
 # code-rag-mcp
 
+[![npm version](https://img.shields.io/npm/v/code-rag-mcp.svg)](https://www.npmjs.com/package/code-rag-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/code-rag-mcp.svg)](https://www.npmjs.com/package/code-rag-mcp)
+[![license](https://img.shields.io/npm/l/code-rag-mcp.svg)](./LICENSE)
+
 Repo-local semantic code search over [MCP](https://modelcontextprotocol.io). Tree-sitter chunking + [jina-embeddings-v2-base-code](https://huggingface.co/jinaai/jina-embeddings-v2-base-code) + LanceDB. One command to install.
 
 When you use Claude Code (or any MCP-aware assistant) with this server loaded, intent-based queries like *"where do we handle JWT refresh"* or *"auth race condition fix"* return ranked code snippets — not just files that literally contain the words.
@@ -10,6 +14,8 @@ When you use Claude Code (or any MCP-aware assistant) with this server loaded, i
 cd your-repo
 npx code-rag-mcp init
 ```
+
+No global install needed — `npx` fetches and caches the package on first run. To pin a specific version, use `npx code-rag-mcp@0.1.0 init`.
 
 That's it. `init` will:
 

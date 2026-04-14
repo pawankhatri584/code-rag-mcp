@@ -38,6 +38,11 @@
     "type": "git",
     "url": "git+https://github.com/pawankhatri584/code-rag-mcp.git"
   },
+  "homepage": "https://github.com/pawankhatri584/code-rag-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/pawankhatri584/code-rag-mcp/issues"
+  },
+  "author": "Pawan Khatri",
   "dependencies": {
     "@huggingface/transformers": "^3.0.0",
     "@lancedb/lancedb": "^0.10.0",
