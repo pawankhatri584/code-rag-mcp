@@ -1,0 +1,52 @@
+{
+  "name": "code-rag-mcp",
+  "version": "0.1.0",
+  "description": "Repo-local semantic code search over MCP. Tree-sitter chunking + jina-embeddings-v2-base-code + LanceDB. One command to install.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "code-rag": "src/cli.js"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "node src/cli.js serve",
+    "serve": "node src/cli.js serve",
+    "index": "node src/cli.js reindex",
+    "stats": "node src/cli.js stats"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "claude-code",
+    "rag",
+    "code-search",
+    "semantic-search",
+    "embeddings",
+    "tree-sitter",
+    "lancedb"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pawankhatri584/code-rag-mcp.git"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.0",
+    "@lancedb/lancedb": "^0.10.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "ignore": "^5.3.2",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-javascript": "^0.21.4",
+    "tree-sitter-python": "^0.21.0",
+    "tree-sitter-rust": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.2"
+  }
+}
