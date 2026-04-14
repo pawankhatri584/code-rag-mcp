@@ -1,6 +1,6 @@
 {
   "name": "code-rag-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Lightweight repo-local hybrid (semantic + keyword) code search over MCP. Pure npm — no Docker, no Ollama, no servers. 11 languages via tree-sitter, jina-code embeddings, LanceDB, live file watcher. One command to install.",
   "type": "module",
   "main": "src/index.js",

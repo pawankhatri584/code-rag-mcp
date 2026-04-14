@@ -60,7 +60,7 @@ That's it. `init`:
 3. Computes a repo-scoped data dir at `~/.cache/code-rag/<hash>/` (outside your tree).
 4. Kicks off the first index in a background process. Logs stream to `<data-dir>/index.log`.
 
-Restart Claude Code — the `code_search`, `get_chunk`, and `index_stats` tools appear automatically.
+Restart Claude Code — the `code_search`, `exists`, `get_chunk`, and `index_stats` tools appear automatically.
 
 ### Claude Code plugin
 
@@ -93,9 +93,10 @@ Add `--personal` to any of the above to write into `.claude/settings.local.json`
 
 | Tool | Purpose |
 |------|---------|
-| `code_search` | Hybrid (semantic + keyword + RRF) / semantic-only / keyword-only search. Args: `query`, `k` (default 10, max 50), `mode` (`hybrid` default), `language`, `path_glob`. Returns ranked chunks with `path:start-end` IDs. |
+| `code_search` | Hybrid (semantic + keyword + RRF) / semantic-only / keyword-only search. Args: `query`, `k` (default 10, max 50), `mode` (`hybrid` default), `language`, `path_glob`, `path_glob_exclude`. Returns ranked chunks with `path:start-end` IDs, per-result `via=semantic\|keyword\|both` + `kw_hits=N` attribution, and a confidence header (flags low confidence when literal identifiers in the query don't appear in any chunk). |
+| `exists` | Definitive presence check — grep-equivalent companion to `code_search`. Args: `query` (literal substring), `language`, `path_glob`, `path_glob_exclude`, `max_locations`. Returns count + sample locations, or zero. Faster and unambiguous for "does X appear anywhere?" questions. |
 | `get_chunk` | Fetch the full content of a single chunk by ID (for follow-up reads after a truncated result). |
-| `index_stats` | File count, chunk count, language distribution, index location. |
+| `index_stats` | File count, chunk count, language distribution, stale-file sample, index location. |
 
 ## How search works (hybrid)
 

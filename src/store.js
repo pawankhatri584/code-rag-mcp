@@ -33,12 +33,16 @@ export async function openStore(dataDir) {
   return new Store(db);
 }
 
-function baseFilters({ language, pathGlob }) {
+function baseFilters({ language, pathGlob, pathGlobExclude }) {
   const filters = [];
   if (language) filters.push(`language = '${language.replace(/'/g, "''")}'`);
   if (pathGlob) {
     const like = pathGlob.replace(/\*/g, "%");
     filters.push(`path LIKE '${like.replace(/'/g, "''")}'`);
+  }
+  if (pathGlobExclude) {
+    const like = pathGlobExclude.replace(/\*/g, "%");
+    filters.push(`path NOT LIKE '${like.replace(/'/g, "''")}'`);
   }
   return filters;
 }
@@ -102,10 +106,10 @@ export class Store {
     await this.files.add([{ path: filePath, mtime: Math.floor(mtime), chunk_count: chunks.length }]);
   }
 
-  async search(queryVec, { k = 10, language, pathGlob } = {}) {
+  async search(queryVec, { k = 10, language, pathGlob, pathGlobExclude } = {}) {
     await this.ensureTables();
     let q = this.chunks.search(Float32Array.from(queryVec)).limit(k);
-    const filters = baseFilters({ language, pathGlob });
+    const filters = baseFilters({ language, pathGlob, pathGlobExclude });
     if (filters.length) q = q.where(filters.join(" AND "));
     return q.toArray();
   }
@@ -114,7 +118,7 @@ export class Store {
   // contains any of the query tokens. The caller (hybrid.js) does the actual scoring.
   // We cap to CANDIDATE_LIMIT because SQL LIKE can match a lot, and we only need a
   // reasonable candidate pool to feed into RRF.
-  async keywordCandidates(tokens, { candidateLimit = 200, language, pathGlob } = {}) {
+  async keywordCandidates(tokens, { candidateLimit = 200, language, pathGlob, pathGlobExclude } = {}) {
     await this.ensureTables();
     if (!tokens || tokens.length === 0) return [];
     // Dedupe + escape SQL single quotes. We don't escape %/_ — the whole query is
@@ -125,12 +129,81 @@ export class Store {
       return `lower(content) LIKE '%${esc}%'`;
     });
     const filters = [`(${likeClauses.join(" OR ")})`];
-    filters.push(...baseFilters({ language, pathGlob }));
+    filters.push(...baseFilters({ language, pathGlob, pathGlobExclude }));
     return this.chunks
       .query()
       .where(filters.join(" AND "))
       .limit(candidateLimit)
       .toArray();
+  }
+
+  // Count chunks containing each literal token (case-insensitive substring).
+  // Returns Map<literal, count>. Used both for BM25 IDF and the per-literal hit
+  // summary surfaced in code_search output.
+  async countLiteralMatches(tokens, { language, pathGlob, pathGlobExclude } = {}) {
+    await this.ensureTables();
+    const out = new Map();
+    if (!tokens?.length) return out;
+    const baseClauses = baseFilters({ language, pathGlob, pathGlobExclude });
+    for (const tok of tokens) {
+      const esc = String(tok).toLowerCase().replace(/'/g, "''");
+      const where = [`lower(content) LIKE '%${esc}%'`, ...baseClauses].join(" AND ");
+      let count;
+      try {
+        count = await this.chunks.countRows(where);
+      } catch {
+        // Fallback if this LanceDB build doesn't support filtered countRows.
+        const rows = await this.chunks.query().where(where).limit(100000).toArray();
+        count = rows.length;
+      }
+      out.set(tok, count);
+    }
+    return out;
+  }
+
+  // Definitive presence check for a literal substring. Returns count + file count + sample.
+  // Powers the `exists` MCP tool.
+  async countAndSampleLiteral(query, { language, pathGlob, pathGlobExclude, sampleLimit = 20 } = {}) {
+    await this.ensureTables();
+    const esc = String(query).toLowerCase().replace(/'/g, "''");
+    const where = [`lower(content) LIKE '%${esc}%'`, ...baseFilters({ language, pathGlob, pathGlobExclude })].join(" AND ");
+    let count;
+    try {
+      count = await this.chunks.countRows(where);
+    } catch {
+      const rows = await this.chunks.query().where(where).limit(100000).toArray();
+      count = rows.length;
+    }
+    if (count === 0) return { count: 0, fileCount: 0, sample: [], fileCountExact: true };
+    const sample = await this.chunks
+      .query()
+      .where(where)
+      .select(["path", "start_line", "end_line"])
+      .limit(sampleLimit)
+      .toArray();
+    // Cap how wide we look for distinct files; for very broad matches we return a lower-bound.
+    const wideLimit = Math.min(Math.max(count, sampleLimit), 5000);
+    const wide = await this.chunks
+      .query()
+      .where(where)
+      .select(["path"])
+      .limit(wideLimit)
+      .toArray();
+    const fileCount = new Set(wide.map((r) => r.path)).size;
+    return { count, fileCount, sample, fileCountExact: count <= wideLimit };
+  }
+
+  // Look up stored mtimes for a subset of paths (efficient for per-result staleness checks).
+  async getStoredMtimes(paths) {
+    await this.ensureTables();
+    if (!paths?.length) return new Map();
+    const escaped = [...new Set(paths)]
+      .map((p) => `'${String(p).replace(/'/g, "''")}'`)
+      .join(",");
+    const rows = await this.files.query().where(`path IN (${escaped})`).toArray();
+    const map = new Map();
+    for (const r of rows) map.set(r.path, Number(r.mtime));
+    return map;
   }
 
   async getChunk(id) {
